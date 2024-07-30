@@ -1,0 +1,26 @@
+{
+  "name": "experiment-runner",
+  "version": "0.0.0",
+  "description": "Develop and run web experiments locally",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rasel-rz/experiment-runner.git"
+  },
+  "author": "Raihan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rasel-rz/experiment-runner/issues"
+  },
+  "homepage": "https://github.com/rasel-rz/experiment-runner#readme",
+  "dependencies": {
+    "express": "^4.19.2",
+    "inquirer": "^10.1.5",
+    "nodemon": "^3.1.4"
+  }
+}

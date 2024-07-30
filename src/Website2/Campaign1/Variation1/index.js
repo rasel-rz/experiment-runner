@@ -1,0 +1,1 @@
+console.log("Hello W2 World from Variation.js!");
