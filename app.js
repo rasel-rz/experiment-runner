@@ -4,6 +4,10 @@ const path = require('path');
 const sass = require('sass');
 const app = express();
 const port = 3001;
+
+const ws = require('ws');
+const wss = new ws.WebSocketServer({ port: 3031 });
+
 app.get('/', (req, res) => res.send('Hello World!'));
 
 const rootPath = path.join(__dirname + '/src');
@@ -40,3 +44,27 @@ app.get("/variation.css", (req, res) => {
     res.sendFile(variationPath);
 });
 app.listen(port, () => console.log(`Server is running at http://localhost:${port}`));
+
+let connected = false;
+wss.on('connection', ws => {
+    if (connected) return;
+    connected = true;
+    let timer = null;
+    const activeVariation = getActiveVariation();
+    const filesToWatch = [
+        path.join(rootPath, activeVariation.website, activeVariation.campaign, activeVariation.variation, 'index.js'),
+        path.join(rootPath, activeVariation.website, activeVariation.campaign, activeVariation.variation, 'style.scss'),
+    ];
+    filesToWatch.forEach(file => {
+        fs.watch(file, (event, filename) => {
+            if (event !== 'change') return;
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                console.log(`File ${filename} has been changed at ${new Date().toISOString()}`);
+                console.log(`Sending message to all(${wss.clients.size}) tabs...`);
+                wss.clients.forEach(tab => tab.send(JSON.stringify({ event, filename })));
+            }, 1000);
+        });
+    });
+    console.log('Watching files for changes...');
+});

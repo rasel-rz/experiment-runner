@@ -18,5 +18,7 @@ The following script should be added to your site to run the experiment. You can
     const script = document.createElement("script");
     script.src = path + ".js";
     document.head.append(style, script);
+    const socket = new WebSocket("ws://localhost:3031");
+    socket.addEventListener("message", () => { socket.close(); window.location.reload(); });
 })();
 ```
