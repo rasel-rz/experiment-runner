@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "select": "node select.js",
     "dev": "nodemon app.js",
     "start": "node app.js"
   },
@@ -21,6 +22,7 @@
   "dependencies": {
     "express": "^4.19.2",
     "inquirer": "^10.1.5",
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.4",
+    "sass": "^1.77.8"
   }
 }
