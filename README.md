@@ -1,6 +1,8 @@
 # experiment-runner
 Develop and run web experiments locally!
 
+Run `npm i` to install dependencies.
+
 To start, run `npm start`. For dev mode, run `npm run dev`.
 
 To select a variation or create a new one, run `npm run select`.
