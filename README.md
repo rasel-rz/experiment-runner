@@ -1,6 +1,7 @@
 # experiment-runner
 Develop and run web experiments locally!
 
+### Installation
 Run `npm i` to install dependencies.
 
 To start, run `npm start`. For dev mode, run `npm run dev`.
@@ -11,14 +12,8 @@ The following script should be added to your site to run the experiment. You can
 
 ```
 !(() => {
-    const path = "http://localhost:3001/variation";
-    const style = document.createElement("link");
-    style.rel = "stylesheet";
-    style.href = path + ".css";
     const script = document.createElement("script");
-    script.src = path + ".js";
-    document.head.append(style, script);
-    const socket = new WebSocket("ws://localhost:3031");
-    socket.addEventListener("message", () => { socket.close(); window.location.reload(); });
+    script.src = "http://localhost:3001/bundle.js";
+    document.head.append(script);
 })();
 ```

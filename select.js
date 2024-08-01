@@ -31,7 +31,7 @@ function selectWebsite() {
             inq.prompt([{ type: 'input', message: 'Enter website name:', name: 'website', validate: () => pathValidator(answers.website, 'Website') }]).then((answers) => {
                 selectedWebsite = answers.website;
                 fs.mkdirSync(path.join(rootPath, selectedWebsite));
-                resolve(selectedWebsite);
+                return resolve(selectedWebsite);
             }).catch(reject);
         }).catch(reject);
     });
@@ -48,7 +48,7 @@ function selectCampaign() {
             inq.prompt([{ type: 'input', message: 'Enter campaign name:', name: 'campaign', validate: () => pathValidator(answers.campaign, 'Campaign') }]).then((answers) => {
                 selectedCampaign = answers.campaign;
                 fs.mkdirSync(path.join(rootPath, selectedWebsite, selectedCampaign));
-                resolve(selectedCampaign);
+                return resolve(selectedCampaign);
             }).catch(reject);
         }).catch(reject);
     });
@@ -67,9 +67,9 @@ function selectVariation() {
                 fs.mkdirSync(path.join(rootPath, selectedWebsite, selectedCampaign, selectedVariation));
                 fs.createWriteStream(path.join(rootPath, selectedWebsite, selectedCampaign, selectedVariation, 'index.js')).end();
                 fs.createWriteStream(path.join(rootPath, selectedWebsite, selectedCampaign, selectedVariation, 'style.scss')).end();
-                resolve(selectedVariation);
-            }).then(reject);
-        }).then(reject);
+                return resolve(selectedVariation);
+            }).catch(reject);
+        }).catch(reject);
     });
 }
 
@@ -78,9 +78,10 @@ selectWebsite().then(selectCampaign).then(selectVariation).then(() => {
         fs.readdirSync(path.join(rootPath, website)).forEach(campaign => {
             fs.readdirSync(path.join(rootPath, website, campaign)).forEach(variation => {
                 const isActiveNow = fs.existsSync(path.join(rootPath, website, campaign, variation, '.now'));
-                if (isActiveNow) return fs.unlinkSync(path.join(rootPath, website, campaign, variation, '.now'));
+                if (isActiveNow) fs.unlinkSync(path.join(rootPath, website, campaign, variation, '.now'));
             });
         });
     });
+    console.log('>>> Selected variation: ' + [selectedWebsite, selectedCampaign, selectedVariation].join(' > '));
     fs.createWriteStream(path.join(rootPath, selectedWebsite, selectedCampaign, selectedVariation, '.now')).end();
 }).catch(() => true);
