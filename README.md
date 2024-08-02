@@ -13,7 +13,7 @@ The following script should be added to your site to run the experiment. You can
 ```
 !(() => {
     const script = document.createElement("script");
-    script.src = "http://localhost:3001/bundle.js";
+    script.src = "http://localhost:3001/experiment-runner.js";
     document.head.append(script);
 })();
 ```
