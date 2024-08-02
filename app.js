@@ -7,6 +7,16 @@ const rollup = require('rollup');
 const app = express();
 const serverport = process.env.SERVER_PORT || 3001;
 const wsport = process.env.WS_PORT || 3031;
+const rollupAlias = require('@rollup/plugin-alias');
+const rollupJson = require('@rollup/plugin-json');
+const pluginConfigs = [
+    rollupJson({ namedExports: false, preferConst: true }),
+    rollupAlias({
+        entries: [
+            { find: /@utils\/(.*)/, replacement: "./../../../../utils/$1" },
+        ],
+    }),
+];
 app.get('/', (req, res) => res.send('Hello World!'));
 
 const rootPath = path.join(__dirname + '/src');
@@ -33,7 +43,8 @@ const variationDir = path.join(rootPath, activeVariation.website, activeVariatio
 function bundleJs(variationPath) {
     return new Promise(async (resolve, reject) => {
         const bundle = await rollup.rollup({
-            input: path.join(variationPath, 'index.js')
+            input: path.join(variationPath, 'index.js'),
+            plugins: pluginConfigs
         });
         const { output } = await bundle.generate({ format: 'iife', strict: false });
         const bundleJs = output[0].code;
@@ -42,11 +53,8 @@ function bundleJs(variationPath) {
     });
 }
 
-
 app.get("/variation.js", (req, res) => {
-    const buildJSExists = fs.existsSync(path.join(variationDir, 'build.js'));
-    if (buildJSExists) return res.sendFile(path.join(variationDir, 'build.js'));
-    bundleJs(variationDir).then(res.sendFile.bind(res, path.join(variationDir, 'build.js')));
+    return res.sendFile(path.join(variationDir, 'build.js'));
 });
 app.get("/variation.css", (req, res) => {
     const result = sass.compile(path.join(variationDir, 'style.scss'), { style: "compressed" });
@@ -58,7 +66,8 @@ app.get("/experiment-runner.js", (req, res) => {
     const bundleJs = fs.readFileSync(path.join(__dirname, 'bundle.js')).toString().replace(/{{server_port}}/g, serverport).replace(/{{ws_port}}/g, wsport);
     res.send(bundleJs).end();
 });
-app.listen(serverport, () => console.log(`Server is running at http://localhost:${serverport}`));
+
+bundleJs(variationDir).then(() => app.listen(serverport, () => console.log(`Server is running at http://localhost:${serverport}`)));
 
 let connected = false;
 const ws = require('ws');
@@ -82,7 +91,8 @@ wss.on('connection', ws => {
     let changedFilePath = null;
     const jsWatcher = rollup.watch({
         input: path.join(variationDir, 'index.js'),
-        output: { file: path.join(variationDir, 'build.js'), format: (process.env.BUILD_FORMAT || 'cjs'), strict: false }
+        output: { file: path.join(variationDir, 'build.js'), format: (process.env.BUILD_FORMAT || 'cjs'), strict: false },
+        plugins: pluginConfigs,
     });
     jsWatcher.on('event', event => {
         if (event.code !== 'END' || !changedFilePath) return;
