@@ -82,7 +82,7 @@ wss.on('connection', ws => {
     let changedFilePath = null;
     const jsWatcher = rollup.watch({
         input: path.join(variationDir, 'index.js'),
-        output: { file: path.join(variationDir, 'build.js'), format: 'iife', strict: false }
+        output: { file: path.join(variationDir, 'build.js'), format: (process.env.BUILD_FORMAT || 'cjs'), strict: false }
     });
     jsWatcher.on('event', event => {
         if (event.code !== 'END' || !changedFilePath) return;
