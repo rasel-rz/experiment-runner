@@ -63,7 +63,7 @@ app.get("/variation.css", (req, res) => {
     res.sendFile(cssPath);
 });
 app.get("/experiment-runner.js", (req, res) => {
-    const bundleJs = fs.readFileSync(path.join(__dirname, 'bundle.js')).toString().replace(/{{server_port}}/g, serverport).replace(/{{ws_port}}/g, wsport);
+    const bundleJs = fs.readFileSync(path.join(__dirname, 'ops', 'bundle.js')).toString().replace(/{{server_port}}/g, serverport).replace(/{{ws_port}}/g, wsport);
     res.send(bundleJs).end();
 });
 

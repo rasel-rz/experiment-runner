@@ -5,13 +5,20 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "select": "node select.js",
-    "dev": "nodemon app.js --ignore src/",
+    "select": "node ops/select.js",
+    "dev": "nodemon app.js",
     "start": "node app.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rasel-rz/experiment-runner.git"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "src/*",
+      "utils/*",
+      "templates/*"
+    ]
   },
   "author": "Raihan",
   "license": "ISC",

@@ -19,8 +19,8 @@ function pathValidator(input, name) {
     if (fs.existsSync(path.join(rootPath, input))) return name + ' name already exists';
     return true;
 }
-const rootPath = path.join(__dirname + '/src');
-const templatesPath = path.join(__dirname, 'templates');
+const rootPath = path.join(__dirname + './../src');
+const templatesPath = path.join(__dirname, './../templates');
 let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
 
 function selectWebsite() {
@@ -100,12 +100,11 @@ selectWebsite().then(selectCampaign).then(selectVariation).then(() => {
     });
     console.log('>>> Selected variation: ' + [selectedWebsite, selectedCampaign, selectedVariation].join(' > '));
     fs.createWriteStream(path.join(rootPath, selectedWebsite, selectedCampaign, selectedVariation, '.now')).end();
-}).catch(() => true);
+}).catch(e => true);
 
 function createTemplate() {
     inq.prompt([{ type: 'input', message: 'Enter template name:', name: 'template', validate: (input) => pathValidator(input, 'Template') }]).then((answers) => {
         const templatePath = path.join(templatesPath, answers.template);
-        if (fs.existsSync(templatePath)) return console.log('Template already exists');
         fs.mkdirSync(templatePath);
         fs.createWriteStream(path.join(templatePath, 'index.js')).end();
         fs.createWriteStream(path.join(templatePath, 'style.scss')).end();
