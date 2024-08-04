@@ -46,7 +46,7 @@ function bundleJs(variationPath) {
             input: path.join(variationPath, 'index.js'),
             plugins: pluginConfigs
         });
-        const { output } = await bundle.generate({ format: 'iife', strict: false });
+        const { output } = await bundle.generate({ format: (process.env.BUILD_FORMAT || 'cjs'), strict: false });
         const bundleJs = output[0].code;
         fs.writeFileSync(path.join(variationPath, 'build.js'), bundleJs);
         resolve();

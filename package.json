@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "select": "node select.js",
-    "dev": "nodemon app.js",
+    "dev": "nodemon app.js --ignore src/",
     "start": "node app.js"
   },
   "repository": {
