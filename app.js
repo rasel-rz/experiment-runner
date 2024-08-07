@@ -39,6 +39,7 @@ function getActiveVariation() {
 const activeVariation = getActiveVariation();
 if (!activeVariation) return console.log('No active variation found!');
 const variationDir = path.join(rootPath, activeVariation.website, activeVariation.campaign, activeVariation.variation);
+if (!fs.existsSync(path.join(variationDir, 'dist'))) fs.mkdirSync(path.join(variationDir, 'dist'));
 
 function bundleJs(variationPath) {
     return new Promise(async (resolve, reject) => {
@@ -48,17 +49,17 @@ function bundleJs(variationPath) {
         });
         const { output } = await bundle.generate({ format: (process.env.BUILD_FORMAT || 'cjs'), strict: false });
         const bundleJs = output[0].code;
-        fs.writeFileSync(path.join(variationPath, 'build.js'), bundleJs);
+        fs.writeFileSync(path.join(variationPath, 'dist', 'index.js'), bundleJs);
         resolve();
     });
 }
 
 app.get("/variation.js", (req, res) => {
-    return res.sendFile(path.join(variationDir, 'build.js'));
+    return res.sendFile(path.join(variationDir, 'dist', 'index.js'));
 });
 app.get("/variation.css", (req, res) => {
     const result = sass.compile(path.join(variationDir, 'style.scss'), { style: "compressed" });
-    const cssPath = path.join(variationDir, 'style.css');
+    const cssPath = path.join(variationDir, 'dist', 'style.css');
     fs.writeFileSync(cssPath, result.css);
     res.sendFile(cssPath);
 });
@@ -91,7 +92,7 @@ wss.on('connection', ws => {
     let changedFilePath = null;
     const jsWatcher = rollup.watch({
         input: path.join(variationDir, 'index.js'),
-        output: { file: path.join(variationDir, 'build.js'), format: (process.env.BUILD_FORMAT || 'cjs'), strict: false },
+        output: { file: path.join(variationDir, 'dist', 'index.js'), format: (process.env.BUILD_FORMAT || 'cjs'), strict: false },
         plugins: pluginConfigs,
     });
     jsWatcher.on('event', event => {
