@@ -4,3 +4,5 @@ package-lock.json
 .env
 src/demo*/
 templates/demo*/
+.vscode/
+.history/
