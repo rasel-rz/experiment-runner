@@ -16,13 +16,4 @@
     script.src = path + ".js";
     document.head.append(script);
     injectStyle(path + ".css");
-
-    const socket = new WebSocket("ws://{{hostname}}:{{ws_port}}");
-    socket.addEventListener("message", (res) => {
-        const data = JSON.parse(res.data);
-        if (data.event !== "change") return;
-        if (!data.filename) return;
-        if (data.filename.match(/\.scss$/i)) return injectStyle(path + ".css");
-        window.location.reload();
-    });
 })();

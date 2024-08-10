@@ -6,3 +6,4 @@ src/demo*/
 templates/demo*/
 .vscode/
 .history/
+*.pem

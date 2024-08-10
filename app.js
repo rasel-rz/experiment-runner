@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require('express');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const sass = require('sass');
@@ -7,6 +8,7 @@ const rollup = require('rollup');
 const app = express();
 const serverport = process.env.SERVER_PORT || 3001;
 const wsport = process.env.WS_PORT || 3031;
+const protocol = process.env.PROTOCOL || 'http';
 const rollupAlias = require('@rollup/plugin-alias');
 const rollupJson = require('@rollup/plugin-json');
 const pluginConfigs = [
@@ -64,11 +66,34 @@ app.get("/variation.css", (req, res) => {
     res.sendFile(cssPath);
 });
 app.get("/experiment-runner.js", (req, res) => {
-    const bundleJs = fs.readFileSync(path.join(__dirname, 'ops', 'bundle.js')).toString().replace(/{{server_port}}/g, serverport).replace(/{{ws_port}}/g, wsport);
+    const bundleJs = fs.readFileSync(path.join(__dirname, 'ops', 'bundle.js')).toString()
+        .replace(/{{server_port}}/g, serverport)
+        .replace(/{{ws_port}}/g, wsport)
+        .replace(/{{hostname}}/g, req.hostname)
+        .replace(/{{protocol}}/g, protocol);
+    res.send(bundleJs).end();
+});
+app.get("/experiment-test.js", (req, res) => {
+    const bundleJs = fs.readFileSync(path.join(__dirname, 'ops', 'bundle-no-socket.js')).toString()
+        .replace(/{{server_port}}/g, serverport)
+        .replace(/{{hostname}}/g, req.hostname)
+        .replace(/{{protocol}}/g, protocol);
     res.send(bundleJs).end();
 });
 
-bundleJs(variationDir).then(() => app.listen(serverport, () => console.log(`Server is running at http://localhost:${serverport}`)));
+bundleJs(variationDir).then(() => {
+    if (protocol === 'http') app.listen(serverport, () => console.log(`Server is running at http://localhost:${serverport}`));
+    else {
+        try {
+            const key = fs.readFileSync('./key.pem');
+            const cert = fs.readFileSync('./cert.pem');
+            const server = https.createServer({ key: key, cert: cert }, app);
+            server.listen(serverport, () => console.log(`Server is running at https://localhost:${serverport}`))
+        } catch (e) {
+            console.error('Error reading key.pem or cert.pem file, please make sure they are available in the root directory');
+        }
+    }
+});
 
 let connected = false;
 const ws = require('ws');
