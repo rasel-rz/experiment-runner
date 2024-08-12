@@ -50,14 +50,18 @@ Before we start, we need to find out which IPv4 Address we are connected to on o
 ```
 ipconfig
 ```
+or
+```
+ifconfig | grep "inet "
+```
 It will be similar to `192.168.0.101`.
 
-Now replace the IPv4 address with your own on the following code and save it as Bookmark on your browser.
+Save the following code as Bookmark on your browser.
 ```
-javascript:(function(){const e=document.createElement("script");e.src="https://192.168.0.101:3001/experiment-test.js",e.onload=function(){alert("Experiment runner loaded!")},document.head.append(e)})();
+javascript:(function(){const e=window.prompt("Enter the IP address of the server","localhost"),t=document.createElement("script");t.src=`https://${e}:3001/experiment-test.js`,document.head.append(t)})();
 ```
 
-To test your code on mobile devices, go to your website, then open the address bar on your browser, search for the name of your bookmarklet and click on it. That will run the code on your mobile devices and if the run is successful, you should get an alert like the following.
+To test your code on mobile devices, go to your website, then open the address bar on your browser, search for the name of your bookmarklet and click on it. A prompt will ask for the server IP Address, once you put the right IPv4 address, it will run the code on your mobile devices and if the run is successful, you should get an alert like the following.
 ```
 Experiment runner loaded!
 ```
