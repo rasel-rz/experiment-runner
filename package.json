@@ -32,8 +32,10 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "inquirer": "^10.1.5",
+    "node-clipboardy": "^1.0.3",
     "nodemon": "^3.1.4",
     "rollup": "^4.19.2",
+    "rollup-plugin-import-css": "^3.5.0",
     "sass": "^1.77.8",
     "ws": "^8.18.0"
   }

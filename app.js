@@ -9,8 +9,11 @@ const app = express();
 const serverport = process.env.SERVER_PORT || 3001;
 const wsport = process.env.WS_PORT || 3031;
 const protocol = process.env.PROTOCOL || 'http';
+const toCopyToClipboard = (process.env.COPY_TO_CLIPBOARD || 'false') === 'true';
 const rollupAlias = require('@rollup/plugin-alias');
 const rollupJson = require('@rollup/plugin-json');
+const rollupCss = require('rollup-plugin-import-css');
+console.log(rollupCss);
 const pluginConfigs = [
     rollupJson({ namedExports: false, preferConst: true }),
     rollupAlias({
@@ -18,6 +21,7 @@ const pluginConfigs = [
             { find: /@utils\/(.*)/, replacement: "./../../../../utils/$1" },
         ],
     }),
+    rollupCss(),
 ];
 app.get('/', (req, res) => res.send('Hello World!'));
 
@@ -95,6 +99,16 @@ bundleJs(variationDir).then(() => {
     }
 });
 
+let changedFilePath = null;
+const jsWatcher = rollup.watch({
+    input: path.join(variationDir, 'index.js'),
+    output: { file: path.join(variationDir, 'dist', 'index.js'), format: (process.env.BUILD_FORMAT || 'cjs'), strict: false },
+    plugins: pluginConfigs,
+});
+jsWatcher.on('change', filename => {
+    changedFilePath = path.relative(__dirname, filename);
+});
+
 let connected = false;
 const ws = require('ws');
 const wss = new ws.WebSocketServer({ port: wsport });
@@ -114,19 +128,20 @@ wss.on('connection', ws => {
         }, 1000);
     });
 
-    let changedFilePath = null;
-    const jsWatcher = rollup.watch({
-        input: path.join(variationDir, 'index.js'),
-        output: { file: path.join(variationDir, 'dist', 'index.js'), format: (process.env.BUILD_FORMAT || 'cjs'), strict: false },
-        plugins: pluginConfigs,
-    });
     jsWatcher.on('event', event => {
         if (event.code !== 'END' || !changedFilePath) return;
         console.log(`File ${changedFilePath} has been changed at ${new Date().toLocaleTimeString()}, reloading...`);
         wss.clients.forEach(tab => tab.send(JSON.stringify({ event: 'change', filename: changedFilePath })));
     });
-    jsWatcher.on('change', filename => {
-        changedFilePath = path.relative(__dirname, filename);
-    });
     console.log('Watching files for changes...');
 });
+if (toCopyToClipboard) {
+    const clipboard = require('node-clipboardy');
+    console.log('Copying to clipboard is enabled.');
+    jsWatcher.on('event', event => {
+        if (event.code !== 'END' || !changedFilePath) return;
+        const textToCopy = fs.readFileSync(path.join(variationDir, 'dist', 'index.js')).toString();
+        clipboard.writeSync(textToCopy);
+        console.log(`File ${changedFilePath} has been changed at ${new Date().toLocaleTimeString()}, copied to clipboard.`);
+    });
+}
