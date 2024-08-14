@@ -12,6 +12,7 @@ const wsport = process.env.WS_PORT || 3031;
 const protocol = process.env.PROTOCOL || 'http';
 const buildFormat = process.env.BUILD_FORMAT || 'cjs';
 const toCopyToClipboard = (process.env.COPY_TO_CLIPBOARD || 'false') === 'true';
+const cssFormat = (process.env.MINIFY_CSS || 'false') === 'true' ? 'compressed' : 'expanded';
 const rollupAlias = require('@rollup/plugin-alias');
 const rollupJson = require('@rollup/plugin-json');
 const rollupCss = require('rollup-plugin-import-css');
@@ -65,7 +66,7 @@ app.get("/variation.js", (req, res) => {
     return res.sendFile(path.join(variationDir, 'dist', 'index.js'));
 });
 app.get("/variation.css", (req, res) => {
-    const result = sass.compile(path.join(variationDir, 'style.scss'), { style: "compressed" });
+    const result = sass.compile(path.join(variationDir, 'style.scss'), { style: cssFormat });
     const cssPath = path.join(variationDir, 'dist', 'style.css');
     fs.writeFileSync(cssPath, result.css);
     res.sendFile(cssPath);
