@@ -19,6 +19,11 @@ The following script should be added to your site to run the experiment. You can
 ```
 That's the basic of it!!
 
+## Commands
+`npm start build` to force build the selected variation.
+`npm run select campaign` to select campaign from already selected website.
+`npm run select variation` to select variaiton from already slected website > campaign.
+
 ## Testing across multiple devices on your network
 To make the script available to your local network (so that you can test on different devices connected to your local network),
 we will need to enable HTTPS on our server. Then save a [Bookmarklet](https://en.wikipedia.org/wiki/Bookmarklet) on our devices that doesn't have developer console i.e. mobile/tablet etc.

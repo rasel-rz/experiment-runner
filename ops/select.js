@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const inq = require('inquirer').default;
+const getActiveVariation = require('./active-variation');
+const readdirSync_f = require('./read-folders');
 console.log(">> Variation selection window");
 
 const PromptConstants = {
@@ -25,7 +27,7 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
 
 function selectWebsite() {
     return new Promise((resolve, reject) => {
-        const websites = fs.readdirSync(rootPath);
+        const websites = readdirSync_f(rootPath);
         if (websites.length) websites.push(new inq.Separator());
         websites.push(PromptConstants.WEBSITE, PromptConstants.TEMPLATE, PromptConstants.EXIT);
         inq.prompt([{ type: 'list', message: 'Select a website', name: 'website', choices: websites }]).then((answers) => {
@@ -43,7 +45,7 @@ function selectWebsite() {
 
 function selectCampaign() {
     return new Promise((resolve, reject) => {
-        const campaigns = fs.readdirSync(path.join(rootPath, selectedWebsite));
+        const campaigns = readdirSync_f(path.join(rootPath, selectedWebsite));
         if (campaigns.length) campaigns.push(new inq.Separator());
         campaigns.push(PromptConstants.CAMPAIGN, PromptConstants.EXIT);
         inq.prompt([{ type: 'list', message: 'Select a campaign', name: 'campaign', choices: campaigns }]).then((answers) => {
@@ -60,7 +62,7 @@ function selectCampaign() {
 
 function selectVariation() {
     return new Promise((resolve, reject) => {
-        const variations = fs.readdirSync(path.join(rootPath, selectedWebsite, selectedCampaign));
+        const variations = readdirSync_f(path.join(rootPath, selectedWebsite, selectedCampaign));
         if (variations.length) variations.push(new inq.Separator());
         variations.push(PromptConstants.VARIATION, PromptConstants.EXIT);
         inq.prompt([{ type: 'list', message: 'Select a variation', name: 'variation', choices: variations }]).then((answers) => {
@@ -68,7 +70,7 @@ function selectVariation() {
             if (answers.variation !== PromptConstants.VARIATION) return resolve(selectedVariation = answers.variation);
             inq.prompt([{ type: 'input', message: 'Enter variation name:', name: 'variation', validate: () => pathValidator(answers.variation, 'Variation') }]).then((answers) => {
                 selectedVariation = answers.variation;
-                const templates = fs.readdirSync(templatesPath);
+                const templates = readdirSync_f(templatesPath);
                 if (templates.length) templates.unshift(new inq.Separator());
                 templates.unshift(PromptConstants.EMPTY);
                 inq.prompt([{ type: 'list', message: 'Select a template', name: 'template', choices: templates }]).then((answers) => {
@@ -89,10 +91,10 @@ function selectVariation() {
     });
 }
 
-selectWebsite().then(selectCampaign).then(selectVariation).then(() => {
-    fs.readdirSync(rootPath).forEach(website => {
-        fs.readdirSync(path.join(rootPath, website)).forEach(campaign => {
-            fs.readdirSync(path.join(rootPath, website, campaign)).forEach(variation => {
+function selectVariationNow() {
+    readdirSync_f(rootPath).forEach(website => {
+        readdirSync_f(path.join(rootPath, website)).forEach(campaign => {
+            readdirSync_f(path.join(rootPath, website, campaign)).forEach(variation => {
                 const isActiveNow = fs.existsSync(path.join(rootPath, website, campaign, variation, '.now'));
                 if (isActiveNow) fs.unlinkSync(path.join(rootPath, website, campaign, variation, '.now'));
             });
@@ -100,8 +102,7 @@ selectWebsite().then(selectCampaign).then(selectVariation).then(() => {
     });
     console.log('>>> Selected variation: ' + [selectedWebsite, selectedCampaign, selectedVariation].join(' > '));
     fs.createWriteStream(path.join(rootPath, selectedWebsite, selectedCampaign, selectedVariation, '.now')).end();
-}).catch(e => true);
-
+}
 function createTemplate() {
     inq.prompt([{ type: 'input', message: 'Enter template name:', name: 'template', validate: (input) => pathValidator(input, 'Template') }]).then((answers) => {
         const templatePath = path.join(templatesPath, answers.template);
@@ -110,3 +111,16 @@ function createTemplate() {
         fs.createWriteStream(path.join(templatePath, 'style.scss')).end();
     }).catch((e) => console.trace(e));
 }
+function catch$(e) {
+    return true;
+}
+
+const directToCampaign = process.argv[2] === 'campaign';
+const directToVariation = process.argv[2] === 'variation';
+if (!directToCampaign && !directToVariation) return selectWebsite().then(selectCampaign).then(selectVariation).then(selectVariationNow).catch(catch$);
+const activeVariation = getActiveVariation();
+if (!activeVariation) return console.log('No active variation found! Try `npm run select` first.');
+selectedWebsite = activeVariation.website;
+if (directToCampaign) return selectCampaign().then(selectVariation).then(selectVariationNow).catch(catch$);
+selectedCampaign = activeVariation.campaign;
+if (directToVariation) return selectVariation().then(selectVariationNow).catch(catch$);
