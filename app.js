@@ -14,11 +14,13 @@ const wsport = process.env.WS_PORT || 3031;
 const protocol = process.env.PROTOCOL || 'http';
 const buildFormat = process.env.BUILD_FORMAT || 'cjs';
 const toCopyToClipboard = (process.env.COPY_TO_CLIPBOARD || 'false') === 'true';
+const commentsOnBuild = process.env.COMMENTS || 'all';
 const cssFormat = (process.env.MINIFY_CSS || 'false') === 'true' ? 'compressed' : 'expanded';
 const buildOnly = process.argv[2] === 'build';
 const rollupAlias = require('@rollup/plugin-alias');
 const rollupJson = require('@rollup/plugin-json');
 const rollupCss = require('rollup-plugin-import-css');
+const rollupCleanup = require('rollup-plugin-cleanup');
 const pluginConfigs = [
     rollupJson({ namedExports: false, preferConst: true }),
     rollupAlias({
@@ -27,6 +29,7 @@ const pluginConfigs = [
         ],
     }),
     rollupCss(),
+    rollupCleanup({ comments: commentsOnBuild, maxEmptyLines: 1 })
 ];
 app.get('/', (req, res) => res.send('Hello World!'));
 
