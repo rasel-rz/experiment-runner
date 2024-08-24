@@ -21,7 +21,9 @@ That's the basic of it!!
 
 ## Commands
 `npm start build` to force build the selected variation.
+
 `npm run select campaign` to select campaign from already selected website.
+
 `npm run select variation` to select variaiton from already slected website > campaign.
 
 ## Testing across multiple devices on your network
