@@ -26,6 +26,13 @@ That's the basic of it!!
 
 `npm run select variation` to select variaiton from already slected website > campaign.
 
+## Using as a submodule
+You can use this project as a submodule so keep it seperate from your own/organization repo.
+
+To add this as a submodule on your current repo, run `git submodule add git@github.com:rasel-rz/experiment-runner.git`.
+
+To set it up or run commands, make sure you `cd ./experiment-runner` and follow the **Installation** steps.
+
 ## Testing across multiple devices on your network
 To make the script available to your local network (so that you can test on different devices connected to your local network),
 we will need to enable HTTPS on our server. Then save a [Bookmarklet](https://en.wikipedia.org/wiki/Bookmarklet) on our devices that doesn't have developer console i.e. mobile/tablet etc.
