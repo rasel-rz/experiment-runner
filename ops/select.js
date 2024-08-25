@@ -14,6 +14,7 @@ const PromptConstants = {
     VARIATION: 'Create new variation',
     TEMPLATE: 'Create new template',
     EMPTY: 'Empty',
+    BACK: 'Go back',
     EXIT: 'Exit'
 }
 
@@ -70,9 +71,10 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
             const campaigns = readdirSync_f(path.join(rootPath, selectedWebsite));
             inqPrompt({
                 message: "Select a campaign",
-                source: generateAutocompleteSource(campaigns, [PromptConstants.CAMPAIGN, PromptConstants.EXIT], Separator),
+                source: generateAutocompleteSource(campaigns, [PromptConstants.CAMPAIGN, PromptConstants.BACK, PromptConstants.EXIT], Separator),
             }).then((answeredCampaign) => {
                 if (answeredCampaign === PromptConstants.EXIT) return reject();
+                if (answeredCampaign === PromptConstants.BACK) return resolve(selectWebsite());
                 if (answeredCampaign !== PromptConstants.CAMPAIGN) return resolve(selectedCampaign = answeredCampaign);
                 inq.prompt([{ type: 'input', message: 'Enter campaign name:', name: 'campaign', validate: () => pathValidator(answeredCampaign, 'Campaign') }]).then((answers) => {
                     selectedCampaign = answers.campaign;
@@ -88,17 +90,20 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
             const variations = readdirSync_f(path.join(rootPath, selectedWebsite, selectedCampaign));
             inqPrompt({
                 message: "Select a variation",
-                source: generateAutocompleteSource(variations, [PromptConstants.VARIATION, PromptConstants.EXIT], Separator),
+                source: generateAutocompleteSource(variations, [PromptConstants.VARIATION, PromptConstants.BACK, PromptConstants.EXIT], Separator),
             }).then((answeredVariation) => {
                 if (answeredVariation === PromptConstants.EXIT) return reject();
+                if (answeredVariation === PromptConstants.BACK) return resolve(selectCampaign());
                 if (answeredVariation !== PromptConstants.VARIATION) return resolve(selectedVariation = answeredVariation);
                 inq.prompt([{ type: 'input', message: 'Enter variation name:', name: 'variation', validate: () => pathValidator(answeredVariation, 'Variation') }]).then((answers) => {
                     selectedVariation = answers.variation;
                     const templates = readdirSync_f(templatesPath);
                     inqPrompt({
                         message: "Select a template",
-                        source: generateAutocompleteSource(templates, [PromptConstants.EMPTY], Separator),
+                        source: generateAutocompleteSource(templates, [PromptConstants.EMPTY, PromptConstants.BACK, PromptConstants.EXIT], Separator),
                     }).then((answeredTemplate) => {
+                        if (answeredTemplate === PromptConstants.EXIT) return reject();
+                        if (answeredTemplate === PromptConstants.BACK) return resolve(selectVariation());
                         const variationPath = path.join(rootPath, selectedWebsite, selectedCampaign, selectedVariation);
                         fs.mkdirSync(variationPath);
                         if (answeredTemplate === PromptConstants.EMPTY) {
