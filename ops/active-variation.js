@@ -1,8 +1,10 @@
+require('dotenv').config();
+const isUsedAsSubmodule = (process.env.IS_SUBMODULE || 'false') === 'true';
 const path = require('path');
 const fs = require('fs');
 const readdirSync_f = require('./read-folders');
 module.exports = function getActiveVariation() {
-    const rootPath = path.join(__dirname + '/..' + '/src');
+    const rootPath = path.join(__dirname + `./..${isUsedAsSubmodule ? `/..` : ''}/src`);
     const websites = readdirSync_f(rootPath);
     let activeVariation = null;
     websites.forEach(website => {

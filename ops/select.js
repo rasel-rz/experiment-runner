@@ -1,3 +1,5 @@
+require('dotenv').config();
+const isUsedAsSubmodule = (process.env.IS_SUBMODULE || 'false') === 'true';
 const fs = require('fs');
 const path = require('path');
 const inq = require('inquirer').default;
@@ -21,8 +23,10 @@ function pathValidator(input, name) {
     if (fs.existsSync(path.join(rootPath, input))) return name + ' name already exists';
     return true;
 }
-const rootPath = path.join(__dirname + './../src');
-const templatesPath = path.join(__dirname, './../templates');
+const rootPath = path.join(__dirname + `./..${isUsedAsSubmodule ? `/..` : ''}/src`);
+if (!fs.existsSync(rootPath)) fs.mkdirSync(rootPath);
+const templatesPath = path.join(__dirname, `./..${isUsedAsSubmodule ? `/..` : ''}/templates`);
+if (!fs.existsSync(templatesPath)) fs.mkdirSync(templatesPath);
 let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
 
 function selectWebsite() {
@@ -112,7 +116,7 @@ function createTemplate() {
     }).catch((e) => console.trace(e));
 }
 function catch$(e) {
-    return true;
+    return console.log(e);
 }
 
 const directToCampaign = process.argv[2] === 'campaign';

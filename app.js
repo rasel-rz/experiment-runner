@@ -16,6 +16,7 @@ const buildFormat = process.env.BUILD_FORMAT || 'cjs';
 const toCopyToClipboard = (process.env.COPY_TO_CLIPBOARD || 'false') === 'true';
 const commentsOnBuild = process.env.COMMENTS || 'all';
 const cssFormat = (process.env.MINIFY_CSS || 'false') === 'true' ? 'compressed' : 'expanded';
+const isUsedAsSubmodule = (process.env.IS_SUBMODULE || 'false') === 'true';
 const buildOnly = process.argv[2] === 'build';
 const rollupAlias = require('@rollup/plugin-alias');
 const rollupJson = require('@rollup/plugin-json');
@@ -33,7 +34,8 @@ const pluginConfigs = [
 ];
 app.get('/', (req, res) => res.send('Hello World!'));
 
-const rootPath = path.join(__dirname + '/src');
+const rootPath = path.join(__dirname + (isUsedAsSubmodule ? './..' : '') + '/src');
+if (!fs.existsSync(rootPath)) fs.mkdirSync(rootPath);
 const activeVariation = getActiveVariation();
 if (!activeVariation) return console.log(color.red(`No active variation found!\n${color.yellow(`Please select a variation first using ${color.red('`npm run select`')}.`)}`));
 const variationDir = path.join(rootPath, activeVariation.website, activeVariation.campaign, activeVariation.variation);
@@ -145,8 +147,8 @@ jsWatcher.on('event', event => {
     console.log(colorLog()(`File ${changedFilePath} has been changed at ${new Date().toLocaleTimeString()}, ${connected ? 'reloading..' : 'copied to clipboard'}.`));
 });
 
-console.log("--------------------------------------------------------------------------------------------------------------------")
+console.log("--------------------------------------------------------------------------------------------------------------------");
 console.log(`> Server port: \t\t ${color.italic(serverport)} \t\t|\t> WebSocket port: \t ${color.italic(wsport)}`);
 console.log(`> Protocol: \t\t ${color.italic(protocol)} \t\t|\t> Copy to clipboard: \t ${color.italic(toCopyToClipboard)}`);
 console.log(`> Build format: \t ${color.italic(buildFormat)} \t\t|\t> Active variation: \t ${color.italic(`${activeVariation.website} > ${activeVariation.campaign} > ${activeVariation.variation}`)}`);
-console.log("--------------------------------------------------------------------------------------------------------------------")
+console.log("--------------------------------------------------------------------------------------------------------------------");
