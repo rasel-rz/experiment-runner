@@ -33,6 +33,21 @@ To add this as a submodule on your current repo, run `git submodule add git@gith
 
 Then add `IS_SUBMODULE=true` on `.env` file. To set it up or run commands, make sure you `cd ./experiment-runner` and follow the **Installation** steps.
 
+Your project directory will look like the following.
+```
+project-root/
+├── src/
+│   ├── Website-1
+|   |   ├── Experiment-Or-Campaign-1
+|   |   |   ├── Variation-1
+|   |   |   └── Variation-2
+│   ├── Website-2
+│   └── Website-3
+├── experiment-runner (submodule)
+├── .gitignore
+└── .gitmodules
+```
+
 ## Testing across multiple devices on your network
 To make the script available to your local network (so that you can test on different devices connected to your local network),
 we will need to enable HTTPS on our server. Then save a [Bookmarklet](https://en.wikipedia.org/wiki/Bookmarklet) on our devices that doesn't have developer console i.e. mobile/tablet etc.

@@ -47,6 +47,7 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
 (async function () {
     const { default: inqPrompt, Separator } = await import('inquirer-autocomplete-standalone');
 
+    let logTimer = null;
     function selectWebsite() {
         return new Promise((resolve, reject) => {
             const websites = readdirSync_f(rootPath);
@@ -74,7 +75,7 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
                 source: generateAutocompleteSource(campaigns, [PromptConstants.CAMPAIGN, PromptConstants.BACK, PromptConstants.EXIT], Separator),
             }).then((answeredCampaign) => {
                 if (answeredCampaign === PromptConstants.EXIT) return reject();
-                if (answeredCampaign === PromptConstants.BACK) return resolve(selectWebsite());
+                if (answeredCampaign === PromptConstants.BACK) return reject(selectWebsite().then(selectCampaign).then(selectVariation).then(selectVariationNow).catch(catch$));
                 if (answeredCampaign !== PromptConstants.CAMPAIGN) return resolve(selectedCampaign = answeredCampaign);
                 inq.prompt([{ type: 'input', message: 'Enter campaign name:', name: 'campaign', validate: () => pathValidator(answeredCampaign, 'Campaign') }]).then((answers) => {
                     selectedCampaign = answers.campaign;
@@ -93,7 +94,7 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
                 source: generateAutocompleteSource(variations, [PromptConstants.VARIATION, PromptConstants.BACK, PromptConstants.EXIT], Separator),
             }).then((answeredVariation) => {
                 if (answeredVariation === PromptConstants.EXIT) return reject();
-                if (answeredVariation === PromptConstants.BACK) return resolve(selectCampaign());
+                if (answeredVariation === PromptConstants.BACK) return resolve(selectCampaign().then(selectVariation).then(selectVariationNow).catch(catch$));
                 if (answeredVariation !== PromptConstants.VARIATION) return resolve(selectedVariation = answeredVariation);
                 inq.prompt([{ type: 'input', message: 'Enter variation name:', name: 'variation', validate: () => pathValidator(answeredVariation, 'Variation') }]).then((answers) => {
                     selectedVariation = answers.variation;
@@ -103,7 +104,7 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
                         source: generateAutocompleteSource(templates, [PromptConstants.EMPTY, PromptConstants.BACK, PromptConstants.EXIT], Separator),
                     }).then((answeredTemplate) => {
                         if (answeredTemplate === PromptConstants.EXIT) return reject();
-                        if (answeredTemplate === PromptConstants.BACK) return resolve(selectVariation());
+                        if (answeredTemplate === PromptConstants.BACK) return resolve(selectVariation().then(selectVariationNow).catch(catch$));
                         const variationPath = path.join(rootPath, selectedWebsite, selectedCampaign, selectedVariation);
                         fs.mkdirSync(variationPath);
                         if (answeredTemplate === PromptConstants.EMPTY) {
@@ -130,8 +131,9 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
                 });
             });
         });
-        console.log('>>> Selected variation: ' + [selectedWebsite, selectedCampaign, selectedVariation].join(' > '));
         fs.createWriteStream(path.join(rootPath, selectedWebsite, selectedCampaign, selectedVariation, '.now')).end();
+        clearTimeout(logTimer);
+        logTimer = setTimeout(() => console.log('>>> Selected variation: ' + [selectedWebsite, selectedCampaign, selectedVariation].join(' > ')), 1e3);
     }
 
     function createTemplate() {
