@@ -29,7 +29,7 @@ That's the basic of it!!
 ## Using as a submodule
 You can use this project as a submodule so keep it seperate from your own/organization repo.
 
-To add this as a submodule on your current repo, run `git submodule add git@github.com:rasel-rz/experiment-runner.git`.
+To add this as a submodule on your current repo, run `git submodule add https://github.com/rasel-rz/experiment-runner.git`.
 
 Then add `IS_SUBMODULE=true` on `.env` file. To set it up or run commands, make sure you `cd ./experiment-runner` and follow the **Installation** steps.
 
