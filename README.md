@@ -31,7 +31,7 @@ You can use this project as a submodule so keep it seperate from your own/organi
 
 To add this as a submodule on your current repo, run `git submodule add git@github.com:rasel-rz/experiment-runner.git`.
 
-To set it up or run commands, make sure you `cd ./experiment-runner` and follow the **Installation** steps.
+Then add `IS_SUBMODULE=true` on `.env` file. To set it up or run commands, make sure you `cd ./experiment-runner` and follow the **Installation** steps.
 
 ## Testing across multiple devices on your network
 To make the script available to your local network (so that you can test on different devices connected to your local network),
