@@ -26,7 +26,7 @@ const pluginConfigs = [
     rollupJson({ namedExports: false, preferConst: true }),
     rollupAlias({
         entries: [
-            { find: /@utils\/(.*)/, replacement: "./../../../../utils/$1" },
+            { find: /@utils\/(.*)/, replacement: `./../../../../${isUsedAsSubmodule ? 'experiment-runner/' : ''}utils/$1` },
         ],
     }),
     rollupCss(),
