@@ -41,6 +41,18 @@ if (!activeVariation) return console.log(color.red(`No active variation found!\n
 const variationDir = path.join(rootPath, activeVariation.website, activeVariation.campaign, activeVariation.variation);
 if (!fs.existsSync(path.join(variationDir, 'dist'))) fs.mkdirSync(path.join(variationDir, 'dist'));
 
+function compileCss(variationDir) {
+    try {
+        const result = sass.compile(path.join(variationDir, 'style.scss'), { style: cssFormat });
+        const cssPath = path.join(variationDir, 'dist', 'style.css');
+        fs.writeFileSync(cssPath, result.css);
+        return true;
+    } catch (e) {
+        console.log(color.red(`Error compiling SCSS file: ${e.message}`));
+        return false;
+    }
+}
+
 function buildToDist(variationPath) {
     return new Promise(async (resolve, reject) => {
         const bundle = await rollup.rollup({
@@ -50,14 +62,11 @@ function buildToDist(variationPath) {
         const { output } = await bundle.generate({ format: buildFormat, strict: false });
         const bundledJs = output[0].code;
         fs.writeFileSync(path.join(variationPath, 'dist', 'index.js'), bundledJs);
-
-        const result = sass.compile(path.join(variationPath, 'style.scss'), { style: cssFormat });
-        const cssPath = path.join(variationPath, 'dist', 'style.css');
-        fs.writeFileSync(cssPath, result.css);
+        compileCss(variationPath);
         resolve();
     });
 }
-if (buildOnly) return buildToDist(variationDir);
+if (buildOnly) return buildToDist(variationDir).then(() => console.log(color.green(`Build completed successfully @ ${color.italic(`${activeVariation.website} > ${activeVariation.campaign} > ${activeVariation.variation}`)}`)));
 
 app.get("/variation.js", (req, res) => {
     return res.sendFile(path.join(variationDir, 'dist', 'index.js'));
@@ -126,10 +135,8 @@ fs.watch(scssPath, (event, filename) => {
     clearTimeout(timer);
     timer = setTimeout(() => {
         filename = path.relative(__dirname, scssPath);
-        const result = sass.compile(path.join(variationDir, 'style.scss'), { style: cssFormat });
-        const cssPath = path.join(variationDir, 'dist', 'style.css');
-        fs.writeFileSync(cssPath, result.css);
-        if (!connected) return;
+        const cssDone = compileCss(variationDir);
+        if (!connected || !cssDone) return;
         console.log(colorLog()(`File ${filename} has been changed at ${new Date().toLocaleTimeString()}, updating...`));
         wss.clients.forEach(tab => tab.send(JSON.stringify({ event, filename })));
     }, 1000);
