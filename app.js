@@ -21,6 +21,7 @@ const buildOnly = process.argv[2] === 'build';
 const rollupAlias = require('@rollup/plugin-alias');
 const rollupJson = require('@rollup/plugin-json');
 const rollupCss = require('rollup-plugin-import-css');
+const rollupImage = require('@rollup/plugin-image');
 const rollupCleanup = require('rollup-plugin-cleanup');
 const pluginConfigs = [
     rollupJson({ namedExports: false, preferConst: true }),
@@ -30,6 +31,7 @@ const pluginConfigs = [
         ],
     }),
     rollupCss(),
+    rollupImage(),
     rollupCleanup({ comments: commentsOnBuild, maxEmptyLines: 1 })
 ];
 app.get('/', (req, res) => res.send('Hello World!'));
