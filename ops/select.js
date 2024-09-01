@@ -112,8 +112,7 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
                             fs.createWriteStream(path.join(variationPath, 'style.scss')).end();
                         } else {
                             const templatePath = path.join(templatesPath, answeredTemplate);
-                            fs.copyFileSync(path.join(templatePath, 'index.js'), path.join(variationPath, 'index.js'));
-                            fs.copyFileSync(path.join(templatePath, 'style.scss'), path.join(variationPath, 'style.scss'));
+                            fs.cpSync(templatePath, variationPath, { recursive: true });
                         }
                         return resolve(selectedVariation);
                     }).catch(reject);

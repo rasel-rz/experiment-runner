@@ -42,6 +42,8 @@ const activeVariation = getActiveVariation();
 if (!activeVariation) return console.log(color.red(`No active variation found!\n${color.yellow(`Please select a variation first using ${color.red('`npm run select`')}.`)}`));
 const variationDir = path.join(rootPath, activeVariation.website, activeVariation.campaign, activeVariation.variation);
 if (!fs.existsSync(path.join(variationDir, 'dist'))) fs.mkdirSync(path.join(variationDir, 'dist'));
+if (!fs.existsSync(path.join(variationDir, 'index.js'))) fs.writeFileSync(path.join(variationDir, 'index.js'), '');
+if (!fs.existsSync(path.join(variationDir, 'style.scss'))) fs.writeFileSync(path.join(variationDir, 'style.scss'), '');
 
 function compileCss(variationDir) {
     try {
@@ -68,7 +70,14 @@ function buildToDist(variationPath) {
         resolve();
     });
 }
-if (buildOnly) return buildToDist(variationDir).then(() => console.log(color.green(`Build completed successfully @ ${color.italic(`${activeVariation.website} > ${activeVariation.campaign} > ${activeVariation.variation}`)}`)));
+if (buildOnly) return buildToDist(variationDir).then(async () => {
+    console.log(color.green(`Build completed successfully & copied @ ${color.italic(`${activeVariation.website} > ${activeVariation.campaign} > ${activeVariation.variation}`)}`));
+    const cssToCopy = fs.readFileSync(path.join(variationDir, 'dist', 'style.css')).toString();
+    clipboard.writeSync(cssToCopy);
+    await (() => new Promise(r => setTimeout(r, 1e3)))();
+    const jsToCopy = fs.readFileSync(path.join(variationDir, 'dist', 'index.js')).toString();
+    clipboard.writeSync(jsToCopy);
+});
 
 app.get("/variation.js", (req, res) => {
     return res.sendFile(path.join(variationDir, 'dist', 'index.js'));
