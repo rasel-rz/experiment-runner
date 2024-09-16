@@ -8,7 +8,9 @@ To start, run `npm start`. For dev mode, run `npm run dev`.
 
 To select a variation or create a new one, run `npm run select`.
 
-The following script should be added to your site to run the experiment. You can do that using different extension like [TamperMonkey](https://www.tampermonkey.net/) or [User JS & CSS](https://tenrabbits.github.io/user-js-css-docs/).
+You can add the chrome extension (.crx) from root directory and toggle it to run the experiment.
+
+If you don't prefer chrome, then the following script should be added to your site to run the experiment. You can do that using different extension like [TamperMonkey](https://www.tampermonkey.net/) or [User JS & CSS](https://tenrabbits.github.io/user-js-css-docs/).
 
 ```
 !(() => {
