@@ -1,7 +1,6 @@
 /**
  * 
- * @param {string} selector - A valid CSS selector
- * @param {number} minElements - The minimum number of elements to wait for 
+ * @param {string} selector - A valid CSS selector to find the element
  * @param {number} timer - The maximum time to wait for the element to be found 
  * @param {number} frequency - The frequency to check for the element
  * @returns {Promise<Element>} - A promise that resolves to a Element that match the selector
