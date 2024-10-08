@@ -22,6 +22,7 @@ const rollupAlias = require('@rollup/plugin-alias');
 const rollupJson = require('@rollup/plugin-json');
 const rollupCss = require('rollup-plugin-import-css');
 const rollupImage = require('@rollup/plugin-image');
+const { getBabelOutputPlugin } = require('@rollup/plugin-babel');
 const rollupCleanup = require('rollup-plugin-cleanup');
 const pluginConfigs = [
     rollupJson({ namedExports: false, preferConst: true }),
@@ -57,20 +58,33 @@ function compileCss(variationDir) {
     }
 }
 
-function buildToDist(variationPath) {
+function buildToDist(variationPath, generateEs5Code = false) {
     return new Promise(async (resolve, reject) => {
-        const bundle = await rollup.rollup({
+        const bundleConfig = {
             input: path.join(variationPath, 'index.js'),
             plugins: pluginConfigs
-        });
+        };
+        const bundle = await rollup.rollup(bundleConfig);
         const { output } = await bundle.generate({ format: buildFormat, strict: false });
         const bundledJs = output[0].code;
         fs.writeFileSync(path.join(variationPath, 'dist', 'index.js'), bundledJs);
+
+        generateEs5Code && (async () => {
+            try {
+                bundleConfig.plugins.push(getBabelOutputPlugin({ allowAllFormats: true, presets: ['@babel/preset-env'] }));
+                const bundle = await rollup.rollup(bundleConfig);
+                const { output } = await bundle.generate({ format: buildFormat, strict: false });
+                const bundledJs = output[0].code;
+                fs.writeFileSync(path.join(variationPath, 'dist', 'index.es5.js'), bundledJs);
+            } catch (e) {
+                console.log(color.red(`Error generating ES5 code: ${e.message}`));
+            }
+        })();
         compileCss(variationPath);
         resolve();
     });
 }
-if (buildOnly) return buildToDist(variationDir).then(async () => {
+if (buildOnly) return buildToDist(variationDir, true).then(async () => {
     console.log(color.green(`Build completed successfully & copied @ ${color.italic(`${activeVariation.website} > ${activeVariation.campaign} > ${activeVariation.variation}`)}`));
     const cssToCopy = fs.readFileSync(path.join(variationDir, 'dist', 'style.css')).toString();
     clipboard.writeSync(cssToCopy);
