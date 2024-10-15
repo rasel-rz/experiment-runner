@@ -18,6 +18,7 @@ const commentsOnBuild = process.env.COMMENTS || 'all';
 const cssFormat = (process.env.MINIFY_CSS || 'false') === 'true' ? 'compressed' : 'expanded';
 const isUsedAsSubmodule = (process.env.IS_SUBMODULE || 'false') === 'true';
 const buildOnly = process.argv[2] === 'build';
+const buildFormatCmd = buildOnly && process.argv[3];
 const rollupAlias = require('@rollup/plugin-alias');
 const rollupJson = require('@rollup/plugin-json');
 const rollupCss = require('rollup-plugin-import-css');
@@ -58,14 +59,15 @@ function compileCss(variationDir) {
     }
 }
 
-function buildToDist(variationPath, generateEs5Code = false) {
+function buildToDist(variationPath, generateEs5Code = false, buildFormat_) {
     return new Promise(async (resolve, reject) => {
         const bundleConfig = {
             input: path.join(variationPath, 'index.js'),
             plugins: pluginConfigs
         };
         const bundle = await rollup.rollup(bundleConfig);
-        const { output } = await bundle.generate({ format: buildFormat, strict: false });
+        buildFormat_ = buildFormatCmd || buildFormat;
+        const { output } = await bundle.generate({ format: buildFormat_, strict: false });
         const bundledJs = output[0].code;
         fs.writeFileSync(path.join(variationPath, 'dist', 'index.js'), bundledJs);
 
