@@ -18,11 +18,10 @@ const PromptConstants = {
     EXIT: 'Exit'
 }
 
-function pathValidator(input, name) {
-    input = input.trim();
-    if (!input) return name + ' name cannot be empty';
-    if (input.match(/[^A-z0-9-\s]/i)) return name + ' name can only contain alphanumeric characters, dashes, and spaces';
-    if (fs.existsSync(path.join(rootPath, input))) return name + ' name already exists';
+function pathValidator(input) {
+    input = input.trim().replace(/[^a-zA-Z\d]/gi, '-');
+    if (!input) return 'Cannot be empty';
+    if (fs.existsSync(path.join(rootPath, input))) return 'Already exists';
     return true;
 }
 
@@ -58,8 +57,8 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
                 if (answeredWebsite === PromptConstants.EXIT) return reject();
                 if (answeredWebsite === PromptConstants.TEMPLATE) return reject(createTemplate());
                 if (answeredWebsite !== PromptConstants.WEBSITE) return resolve(selectedWebsite = answeredWebsite);
-                inq.prompt([{ type: 'input', message: 'Enter website name:', name: 'website', validate: () => pathValidator(answeredWebsite, 'Website') }]).then((answers) => {
-                    selectedWebsite = answers.website;
+                inq.prompt([{ type: 'input', message: 'Enter website name:', name: 'website', validate: pathValidator }]).then((answers) => {
+                    selectedWebsite = answers.website.replace(/[^a-zA-Z\d]/gi, '-');
                     fs.mkdirSync(path.join(rootPath, selectedWebsite));
                     return resolve(selectedWebsite);
                 }).catch(reject);
@@ -77,8 +76,8 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
                 if (answeredCampaign === PromptConstants.EXIT) return reject();
                 if (answeredCampaign === PromptConstants.BACK) return reject(selectWebsite().then(selectCampaign).then(selectVariation).then(selectVariationNow).catch(catch$));
                 if (answeredCampaign !== PromptConstants.CAMPAIGN) return resolve(selectedCampaign = answeredCampaign);
-                inq.prompt([{ type: 'input', message: 'Enter campaign name:', name: 'campaign', validate: () => pathValidator(answeredCampaign, 'Campaign') }]).then((answers) => {
-                    selectedCampaign = answers.campaign;
+                inq.prompt([{ type: 'input', message: 'Enter campaign name:', name: 'campaign', validate: pathValidator }]).then((answers) => {
+                    selectedCampaign = answers.campaign.replace(/[^a-zA-Z\d]/gi, '-');
                     fs.mkdirSync(path.join(rootPath, selectedWebsite, selectedCampaign));
                     return resolve(selectedCampaign);
                 }).catch(reject);
@@ -96,8 +95,8 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
                 if (answeredVariation === PromptConstants.EXIT) return reject();
                 if (answeredVariation === PromptConstants.BACK) return resolve(selectCampaign().then(selectVariation).then(selectVariationNow).catch(catch$));
                 if (answeredVariation !== PromptConstants.VARIATION) return resolve(selectedVariation = answeredVariation);
-                inq.prompt([{ type: 'input', message: 'Enter variation name:', name: 'variation', validate: () => pathValidator(answeredVariation, 'Variation') }]).then((answers) => {
-                    selectedVariation = answers.variation;
+                inq.prompt([{ type: 'input', message: 'Enter variation name:', name: 'variation', validate: pathValidator }]).then((answers) => {
+                    selectedVariation = answers.variation.replace(/[^a-zA-Z\d]/gi, '-');
                     const templates = readdirSync_f(templatesPath);
                     inqPrompt({
                         message: "Select a template",
@@ -136,8 +135,8 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
     }
 
     function createTemplate() {
-        inq.prompt([{ type: 'input', message: 'Enter template name:', name: 'template', validate: (input) => pathValidator(input, 'Template') }]).then((answers) => {
-            const templatePath = path.join(templatesPath, answers.template);
+        inq.prompt([{ type: 'input', message: 'Enter template name:', name: 'template', validate: pathValidator }]).then((answers) => {
+            const templatePath = path.join(templatesPath, answers.template.replace(/[^a-zA-Z\d]/gi, '-'));
             fs.mkdirSync(templatePath);
             fs.createWriteStream(path.join(templatePath, 'index.js')).end();
             fs.createWriteStream(path.join(templatePath, 'style.scss')).end();
