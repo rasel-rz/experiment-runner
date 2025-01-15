@@ -18,7 +18,7 @@ let commentsOnBuild = process.env.COMMENTS || 'all';
 const cssFormat = (process.env.MINIFY_CSS || 'false') === 'true' ? 'compressed' : 'expanded';
 const isUsedAsSubmodule = (process.env.IS_SUBMODULE || 'false') === 'true';
 const buildOnly = process.argv[2] === 'build';
-commentsOnBuild = process.argv[3] === '-c' ? 'all' : commentsOnBuild;
+commentsOnBuild = (buildOnly && process.argv[4]) || commentsOnBuild;
 const buildFormatCmd = buildOnly && process.argv[3];
 const rollupAlias = require('@rollup/plugin-alias');
 const rollupJson = require('@rollup/plugin-json');
