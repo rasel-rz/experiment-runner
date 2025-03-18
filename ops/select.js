@@ -47,9 +47,15 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
     const { default: inqPrompt, Separator } = await import('inquirer-autocomplete-standalone');
 
     let logTimer = null;
-    function selectWebsite() {
+    function selectWebsite(searchTerm) {
         return new Promise((resolve, reject) => {
             const websites = readdirSync_f(rootPath);
+            if (searchTerm) {
+                const matchedWebsites = fuzzy.filter(searchTerm, websites);
+                if (matchedWebsites.length !== 1) return reject("No specific match found @website.");
+                selectedWebsite = matchedWebsites[0].original;
+                return resolve(selectedWebsite);
+            }
             inqPrompt({
                 message: 'Select a website',
                 source: generateAutocompleteSource(websites, [PromptConstants.WEBSITE, PromptConstants.TEMPLATE, PromptConstants.EXIT], Separator),
@@ -66,9 +72,15 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
         });
     }
 
-    function selectCampaign() {
+    function selectCampaign(searchTerm) {
         return new Promise((resolve, reject) => {
             const campaigns = readdirSync_f(path.join(rootPath, selectedWebsite));
+            if (searchTerm) {
+                const matchedCampaigns = fuzzy.filter(searchTerm, campaigns);
+                if (matchedCampaigns.length !== 1) return reject("No specific match found @campaign.");
+                selectedCampaign = matchedCampaigns[0].original;
+                return resolve(selectedCampaign);
+            }
             inqPrompt({
                 message: "Select a campaign",
                 source: generateAutocompleteSource(campaigns, [PromptConstants.CAMPAIGN, PromptConstants.BACK, PromptConstants.EXIT], Separator),
@@ -85,9 +97,15 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
         });
     }
 
-    function selectVariation() {
+    function selectVariation(searchTerm) {
         return new Promise((resolve, reject) => {
             const variations = readdirSync_f(path.join(rootPath, selectedWebsite, selectedCampaign));
+            if (searchTerm) {
+                const matchedVariations = fuzzy.filter(searchTerm, variations);
+                if (matchedVariations.length !== 1) return reject("No specific match found @variation.");
+                selectedVariation = matchedVariations[0].original;
+                return resolve(selectedVariation);
+            }
             inqPrompt({
                 message: "Select a variation",
                 source: generateAutocompleteSource(variations, [PromptConstants.VARIATION, PromptConstants.BACK, PromptConstants.EXIT], Separator),
@@ -147,6 +165,15 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
 
     const directToCampaign = process.argv[2] === 'campaign';
     const directToVariation = process.argv[2] === 'variation';
+    const jumpToVariation = process.argv[2] && process.argv[2].startsWith('q-');
+    if (jumpToVariation) {
+        const [w, c, v] = process.argv[2].replace(/^(q-)/gi, "").split('+');
+        if (!w || !c || !v) return console.log("Please try proving whole path!");
+        console.log(`Jumping to variation @query?w=${w}&c=${c}&v=${v}`);
+        return selectWebsite(w).then(selectCampaign.bind(null, c))
+            .then(selectVariation.bind(null, v)).then(selectVariationNow)
+            .catch(e => console.log(e));
+    }
     if (!directToCampaign && !directToVariation) return selectWebsite().then(selectCampaign).then(selectVariation).then(selectVariationNow).catch(catch$);
     const activeVariation = getActiveVariation();
     if (!activeVariation) return console.log('No active variation found! Try `npm run select` first.');

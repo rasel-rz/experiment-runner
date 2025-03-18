@@ -24,8 +24,11 @@ const rollupAlias = require('@rollup/plugin-alias');
 const rollupJson = require('@rollup/plugin-json');
 const rollupCss = require('rollup-plugin-import-css');
 const rollupImage = require('@rollup/plugin-image');
+const rollupStrip = require('@rollup/plugin-strip');
 const { getBabelOutputPlugin } = require('@rollup/plugin-babel');
 const rollupCleanup = require('rollup-plugin-cleanup');
+const envStrips = process.env.STRIP ? process.env.STRIP.split(",") : null;
+const stripConfig = envStrips? {functions: envStrips}: undefined;
 const pluginConfigs = [
     rollupJson({ namedExports: false, preferConst: true }),
     rollupAlias({
@@ -35,6 +38,7 @@ const pluginConfigs = [
     }),
     rollupCss(),
     rollupImage(),
+    rollupStrip(stripConfig),
     rollupCleanup({ comments: commentsOnBuild, maxEmptyLines: 1 })
 ];
 app.get('/', (req, res) => res.send('Hello World!'));

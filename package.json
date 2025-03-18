@@ -32,6 +32,7 @@
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-image": "^3.0.3",
     "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-strip": "^3.0.4",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "fuzzy": "^0.1.3",
