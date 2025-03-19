@@ -174,11 +174,14 @@ let selectedWebsite = null, selectedCampaign = null, selectedVariation = null;
             .then(selectVariation.bind(null, v)).then(selectVariationNow)
             .catch(e => console.log(e));
     }
-    if (!directToCampaign && !directToVariation) return selectWebsite().then(selectCampaign).then(selectVariation).then(selectVariationNow).catch(catch$);
+    if (!directToCampaign && !directToVariation) return selectWebsite()
+        .then(selectCampaign.bind(null, null))
+        .then(selectVariation.bind(null, null)).then(selectVariationNow).catch(catch$);
     const activeVariation = getActiveVariation();
     if (!activeVariation) return console.log('No active variation found! Try `npm run select` first.');
     selectedWebsite = activeVariation.website;
-    if (directToCampaign) return selectCampaign().then(selectVariation).then(selectVariationNow).catch(catch$);
+    if (directToCampaign) return selectCampaign()
+        .then(selectVariation.bind(null, null)).then(selectVariationNow).catch(catch$);
     selectedCampaign = activeVariation.campaign;
     if (directToVariation) return selectVariation().then(selectVariationNow).catch(catch$);
 })();
