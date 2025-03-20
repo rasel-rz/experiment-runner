@@ -28,7 +28,7 @@ const rollupStrip = require('@rollup/plugin-strip');
 const { getBabelOutputPlugin } = require('@rollup/plugin-babel');
 const rollupCleanup = require('rollup-plugin-cleanup');
 const envStrips = process.env.STRIP ? process.env.STRIP.split(",") : null;
-const stripConfig = envStrips? {functions: envStrips}: undefined;
+const stripConfig = envStrips ? { functions: envStrips } : undefined;
 const pluginConfigs = [
     rollupJson({ namedExports: false, preferConst: true }),
     rollupAlias({
@@ -38,7 +38,6 @@ const pluginConfigs = [
     }),
     rollupCss(),
     rollupImage(),
-    rollupStrip(stripConfig),
     rollupCleanup({ comments: commentsOnBuild, maxEmptyLines: 1 })
 ];
 app.get('/', (req, res) => res.send('Hello World!'));
@@ -64,8 +63,9 @@ function compileCss(variationDir) {
     }
 }
 
-function buildToDist(variationPath, generateEs5Code = false, buildFormat_) {
+function buildToDist(variationPath, buildOnly = false, buildFormat_) {
     return new Promise(async (resolve, reject) => {
+        if (buildOnly) pluginConfigs.push(rollupStrip(stripConfig));
         const bundleConfig = {
             input: path.join(variationPath, 'index.js'),
             plugins: pluginConfigs
@@ -76,7 +76,7 @@ function buildToDist(variationPath, generateEs5Code = false, buildFormat_) {
         const bundledJs = output[0].code;
         fs.writeFileSync(path.join(variationPath, 'dist', 'index.js'), bundledJs);
 
-        generateEs5Code && (async () => {
+        buildOnly && (async () => {
             try {
                 bundleConfig.plugins.push(getBabelOutputPlugin({ allowAllFormats: true, presets: ['@babel/preset-env'] }));
                 const bundle = await rollup.rollup(bundleConfig);
